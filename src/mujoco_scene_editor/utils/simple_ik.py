@@ -8,8 +8,7 @@ import numpy as np
 from robits.sim.blueprints import RobotBlueprint
 from robits.sim.blueprints import GripperBlueprint
 from robits.sim.blueprints import Pose
-from robits.sim.model_factory import SceneBuilder
-from robits.sim import mjcf_utils
+from robits.sim.scene.model_factory import SceneBuilder
 
 from robits.utils.transform_utils import transform_pose
 
@@ -49,11 +48,10 @@ class SimpleIK:
         self.posture_task = mink.PostureTask(model=self.model, cost=1e-2)
 
     def _init_model(self):
-        builder = SceneBuilder()
+        builder = SceneBuilder(False)
         builder.add_robot(self.bp, self.gripper_bp)
-        builder.merge_all_keyframes_into_home()
         builder.add_mocap()
-        model = mjcf_utils.reload_model_with_assets(builder.scene)
+        model = builder.build()
 
         data = mujoco.MjData(model)
 
