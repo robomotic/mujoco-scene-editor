@@ -81,17 +81,30 @@ Robot models are detected using a heuristic. See the section below on how to con
 
 ## Prompting / Scene Generation Examples
 
-You can conveniently generate a MuJoCo scene from a natural-language prompt (requires an OpenAI API key):
+You can conveniently generate a MuJoCo scene from a natural-language prompt using OpenAI or OpenRouter.
+
+### Using OpenAI
 
 ```bash
 # Set this to your API key
 export OPENAI_API_KEY=...
 # Generate a scene from a prompt string
 mjprompt
-
-# Edit the generated scene. 
-mjedit examples/prompt/scene_coffee_shop.xml
 ```
+
+### Using OpenRouter
+
+OpenRouter allows you to use various models beyond OpenAI, including many free models.
+
+```bash
+# Set this to your OpenRouter API key
+export OPENROUTER_API_KEY=...
+# Generate a scene using a specific model via OpenRouter
+mjprompt --provider openrouter --model google/gemini-flash-1.5:free
+```
+
+If both `OPENAI_API_KEY` and `OPENROUTER_API_KEY` are set, the editor defaults to OpenAI unless `--provider openrouter` is specified. If only `OPENROUTER_API_KEY` is set, it will automatically fallback to OpenRouter.
+
 Loading a generated scene might not work out of the box in all cases. Generated scenes can have inconsistencies in geometry, but can be easily edited.
 
 ### Examples

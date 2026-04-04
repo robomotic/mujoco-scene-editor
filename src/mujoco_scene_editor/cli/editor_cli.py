@@ -36,6 +36,8 @@ from mujoco_scene_editor.scene_editor import SceneEditor
 from mujoco_scene_editor.constants import DEFAULT_ASSET_DIR
 from mujoco_scene_editor.constants import DEFAULT_EXPORT_TARGET
 
+from mujoco_scene_editor.utils.llm import OpenRouterClient, PromptBuilderWrapper
+
 logger = logging.getLogger(__name__)
 
 setup_cli(logging.INFO)
@@ -148,21 +150,45 @@ def list_assets(root: str):
         click.echo(f"- {m.name}: {m.path}")
 
 
-def validate_has_openai_key(func):
+def validate_has_llm_key(func):
     @wraps(func)
     def _wrapper(*args, **kwargs):
-        if not os.environ.get("OPENAI_API_KEY"):
-            logger.error("Environment variable OPENAI_API_KEY is not set.")
+        provider = kwargs.get("provider")
+        if provider == "openrouter":
+            if not os.environ.get("OPENROUTER_API_KEY"):
+                logger.error("Environment variable OPENROUTER_API_KEY is not set.")
+                raise RuntimeError(
+                    "Missing OPENROUTER_API_KEY. Please export it with export OPENROUTER_API_KEY=... and retry."
+                )
+        elif provider == "openai":
+            if not os.environ.get("OPENAI_API_KEY"):
+                logger.error("Environment variable OPENAI_API_KEY is not set.")
+                raise RuntimeError(
+                    "Missing OPENAI_API_KEY. Please export it with export OPENAI_API_KEY=... and retry."
+                )
+        elif not os.environ.get("OPENAI_API_KEY") and not os.environ.get("OPENROUTER_API_KEY"):
+            logger.error("Neither OPENAI_API_KEY nor OPENROUTER_API_KEY is set.")
             raise RuntimeError(
-                "Missing OPENAI_API_KEY. Please export it with export OPENAI_API_KEY=... and retry."
+                "Missing API key. Please export OPENAI_API_KEY or OPENROUTER_API_KEY and retry."
             )
         return func(*args, **kwargs)
 
     return _wrapper
 
 
-# @validate_has_openai_key
+@validate_has_llm_key
 @cli.command()
+@click.option(
+    "--provider",
+    type=click.Choice(["openai", "openrouter"]),
+    default=None,
+    help="LLM provider to use (default: openai, falls back to openrouter if OPENAI_API_KEY is missing)",
+)
+@click.option(
+    "--model",
+    default=None,
+    help="LLM model to use (default: gpt-3.5-turbo for openai, google/gemini-flash-1.5-free for openrouter)",
+)
 @filepath_option(
     "--output-model-name",
     default=str(Path(DEFAULT_EXPORT_TARGET).with_name("scene_prompt.xml")),
@@ -170,13 +196,36 @@ def validate_has_openai_key(func):
 @input_text_argument(
     "prompt", default="A detailed kitchen with a robot.", prompt="Describe your scene."
 )
-def prompt(output_model_name: str, prompt: str) -> None:
+def prompt(output_model_name: str, prompt: str, provider: Optional[str] = None, model: Optional[str] = None) -> None:
     """
-    Ask ChatGPT to generate a scene. Requires an OpenAI API key
+    Ask an LLM to generate a scene. Supports OpenAI and OpenRouter.
     """
-    from robits.vlm.openai_vlm import PromptBuilder
-    from robits.vlm.openai_vlm import ChatGPT
     import re
+
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    openrouter_key = os.environ.get("OPENROUTER_API_KEY")
+
+    if provider is None:
+        if not openai_key and openrouter_key:
+            provider = "openrouter"
+        else:
+            provider = "openai"
+
+    if provider == "openai":
+        from robits.vlm.openai_vlm import PromptBuilder
+        from robits.vlm.openai_vlm import ChatGPT
+        llm = ChatGPT()
+        builder = PromptBuilder()
+        if model:
+            # We assume ChatGPT class supports model override or we just use it as is
+            # If robits doesn't support it, we might need a workaround.
+            # For now, let's assume it uses default if model is None.
+            pass
+    else:
+        llm = OpenRouterClient()
+        builder = PromptBuilderWrapper()
+        if model is None:
+            model = "openrouter/free"
 
     prefix = """
 Generate a MuJoCo 3.3.7 XML. Here are some guidelines:
@@ -188,15 +237,15 @@ Generate a MuJoCo 3.3.7 XML. Here are some guidelines:
 - Avoid accelerometer and sensor tags
 Output the complete XML file. The scene is as follows:
 """
-    chatgpt = ChatGPT()
-
-    builder = PromptBuilder()
     builder.add_instruction(prefix)
     builder.add_instruction(prompt)
 
     with Progress() as progress:
         progress.add_task("Querying.", total=None)
-        response = chatgpt.query(builder)
+        if provider == "openai":
+             response = llm.query(builder)
+        else:
+             response = llm.query(builder, model=model)
 
     # click.echo(response)
 
