@@ -35,12 +35,14 @@ from mujoco_scene_editor.scene_editor import SceneEditor
 
 from mujoco_scene_editor.constants import DEFAULT_ASSET_DIR
 from mujoco_scene_editor.constants import DEFAULT_EXPORT_TARGET
+from mujoco_scene_editor.env import load_env_file
 
 from mujoco_scene_editor.utils.llm import OpenRouterClient, PromptBuilderWrapper
 
 logger = logging.getLogger(__name__)
 
 setup_cli(logging.INFO)
+load_env_file()
 
 
 def get_scene_editor(blueprints: Optional[List[Blueprint]] = None) -> SceneEditor:
@@ -158,18 +160,18 @@ def validate_has_llm_key(func):
             if not os.environ.get("OPENROUTER_API_KEY"):
                 logger.error("Environment variable OPENROUTER_API_KEY is not set.")
                 raise RuntimeError(
-                    "Missing OPENROUTER_API_KEY. Please export it with export OPENROUTER_API_KEY=... and retry."
+                    "Missing OPENROUTER_API_KEY. Set it in your shell or a `.env` file and retry."
                 )
         elif provider == "openai":
             if not os.environ.get("OPENAI_API_KEY"):
                 logger.error("Environment variable OPENAI_API_KEY is not set.")
                 raise RuntimeError(
-                    "Missing OPENAI_API_KEY. Please export it with export OPENAI_API_KEY=... and retry."
+                    "Missing OPENAI_API_KEY. Set it in your shell or a `.env` file and retry."
                 )
         elif not os.environ.get("OPENAI_API_KEY") and not os.environ.get("OPENROUTER_API_KEY"):
             logger.error("Neither OPENAI_API_KEY nor OPENROUTER_API_KEY is set.")
             raise RuntimeError(
-                "Missing API key. Please export OPENAI_API_KEY or OPENROUTER_API_KEY and retry."
+                "Missing API key. Set OPENAI_API_KEY or OPENROUTER_API_KEY in your shell or a `.env` file and retry."
             )
         return func(*args, **kwargs)
 

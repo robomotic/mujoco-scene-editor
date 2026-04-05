@@ -83,13 +83,22 @@ Robot models are detected using a heuristic. See the section below on how to con
 
 You can conveniently generate a MuJoCo scene from a natural-language prompt using OpenAI or OpenRouter.
 
+You can either export your keys in the shell or place them in a `.env` file in the working directory (or any parent directory). The CLI loads `.env` automatically on startup:
+
+```bash
+cp .env.example .env
+# Then edit `.env` and set OPENAI_API_KEY=... and/or OPENROUTER_API_KEY=...
+```
+
+Exported environment variables take precedence over values in `.env`.
+
 ### Using OpenAI
 
 ```bash
 # Set this to your API key
 export OPENAI_API_KEY=...
 # Generate a scene from a prompt string
-mjprompt
+mjprompt "A detailed kitchen with a robot."
 ```
 
 ### Using OpenRouter
@@ -99,11 +108,30 @@ OpenRouter allows you to use various models beyond OpenAI, including many free m
 ```bash
 # Set this to your OpenRouter API key
 export OPENROUTER_API_KEY=...
+
 # Generate a scene using a specific model via OpenRouter
-mjprompt --provider openrouter --model google/gemini-flash-1.5:free
+mjprompt --provider openrouter --model google/gemini-flash-1.5:free "A cozy living room with a sofa and coffee table."
+
+# Verified working example with GPT-5 Codex via OpenRouter
+mjprompt --provider openrouter --model openai/gpt-5-codex "Output ONLY a valid MuJoCo XML document with root tag <mujoco> for a red cube on a gray floor."
 ```
 
 If both `OPENAI_API_KEY` and `OPENROUTER_API_KEY` are set, the editor defaults to OpenAI unless `--provider openrouter` is specified. If only `OPENROUTER_API_KEY` is set, it will automatically fallback to OpenRouter.
+
+Tested OpenRouter models include `openrouter/free`, `openai/gpt-5-codex`, `qwen/qwen3.6-plus:free`, `nvidia/nemotron-3-super-120b-a12b:free`, `openai/gpt-oss-120b:free`, and `openai/gpt-oss-20b:free`. Availability may still vary with your OpenRouter account and privacy settings.
+
+#### Troubleshooting OpenRouter
+
+- If a model returns `404 Not Found`, check your OpenRouter privacy/data policy settings and confirm that the model is enabled for your account.
+- Some free models may occasionally return non-MuJoCo XML or malformed output; retrying with a stricter prompt or another tested model such as `openai/gpt-5-codex` usually helps.
+- If generation fails entirely, verify that `OPENROUTER_API_KEY` is set correctly in your shell or `.env` file.
+
+To quickly validate your setup, this tested command runs the OpenRouter integration checks:
+
+```bash
+set -a && . ./.env && set +a
+PYTHONPATH=src uv run --with pytest pytest -q tests/test_openrouter.py -s
+```
 
 Loading a generated scene might not work out of the box in all cases. Generated scenes can have inconsistencies in geometry, but can be easily edited.
 
