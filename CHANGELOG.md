@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Upcoming
 
-- 
+- Add support for more robot descriptions
 
 ## [0.1.3] - 2026-03-31
 
