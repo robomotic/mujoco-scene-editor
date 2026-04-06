@@ -29,7 +29,7 @@ dependencies = [
     "click-prompt>=0.6.0",
     "robits[sim]>=0.9.0",
     "mujoco>=3.3,<4.0",
-    "robot-descriptions>=1.14.0,<2.0",
+    "robot-descriptions>=1.23.0,<2.0",
     "cachier>=4.1.0",
     "objaverse>=0.1.7",
     "viser>=1.0.17",
@@ -37,6 +37,7 @@ dependencies = [
     "qpsolvers[quadprog]>=0.1.13",
     "openai>=2.15.0",
     "trimesh>=4.11.1",
+    "xacrodoc>=2.0.0",
 ]
 
 [project.optional-dependencies]
