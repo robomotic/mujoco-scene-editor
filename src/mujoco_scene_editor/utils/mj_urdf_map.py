@@ -14,15 +14,21 @@ def mj_to_urdf_description_name(desc: str) -> str:
         "ur5e_mj_description": "ur5_description",
         "ur10e_mj_description": "ur10_description",
         "iiwa14_mj_description": "iiwa14_description",
-        # "xarm7_mj_description": None,
+        "xarm7_mj_description": "xarm7_description",
         "robotiq_2f85_mj_description": "robotiq_2f85_description",
+        "robotiq_2f85_v4_mj_description": "robotiq_2f85_v4_description",
         "gen3_mj_description": "gen3_description",
         "ability_hand_mj_description": "ability_hand_description",
-        # "aero_hand_open_mj_description": "aero_hand_open_description",
+        "aero_hand_open_mj_description": "aero_hand_open_description",
         "allegro_hand_mj_description": "allegro_hand_description",
         "ability_hand_mj_description_./hands/abh_right_large.xml": "ability_hand_description",
         "panda_mj_description": "panda_description",
         "panda_mj_description_panda_nohand.xml": "panda_description",
+        "fr3_v2_mj_description": "fr3_v2_description",
+        "fr3_mj_description": "fr3_description",
+        "so_arm101_mj_description": "so_arm101_description",
+        "so_arm100_mj_description": "so_arm100_description"
+
         # "panda_mj_description_panda_hand.xml": "",
     }
 
@@ -31,4 +37,4 @@ def mj_to_urdf_description_name(desc: str) -> str:
 
     logger.warning("Unable to find matching URDF package for %s", desc)
 
-    return ""
+    return desc.replace("_mj_", "_")
