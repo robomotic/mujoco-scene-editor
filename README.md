@@ -98,7 +98,7 @@ Exported environment variables take precedence over values in `.env`.
 # Set this to your API key
 export OPENAI_API_KEY=...
 # Generate a scene from a prompt string
-mjprompt "A detailed kitchen with a robot."
+mjprompt "A detailed kitchen."
 ```
 
 ### Using OpenRouter
@@ -130,7 +130,7 @@ To quickly validate your setup, this tested command runs the OpenRouter integrat
 
 ```bash
 set -a && . ./.env && set +a
-PYTHONPATH=src uv run --with pytest pytest -q tests/test_openrouter.py -s
+PYTHONPATH=src uv run pytest -q examples/test_openrouter.py -s
 ```
 
 Loading a generated scene might not work out of the box in all cases. Generated scenes can have inconsistencies in geometry, but can be easily edited.

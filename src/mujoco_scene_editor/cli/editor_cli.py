@@ -16,6 +16,7 @@ from rich.progress import Progress
 from click_prompt import filepath_option
 from click_prompt import filepath_argument
 from click_prompt import input_text_argument
+from click_prompt import choice_option
 
 from robits.sim.blueprints import blueprints_from_json
 from robits.sim.blueprints import Blueprint
@@ -180,7 +181,7 @@ def validate_has_llm_key(func):
 
 @validate_has_llm_key
 @cli.command()
-@click.option(
+@choice_option(
     "--provider",
     type=click.Choice(["openai", "openrouter"]),
     default=None,
@@ -196,7 +197,7 @@ def validate_has_llm_key(func):
     default=str(Path(DEFAULT_EXPORT_TARGET).with_name("scene_prompt.xml")),
 )
 @input_text_argument(
-    "prompt", default="A detailed kitchen with a robot.", prompt="Describe your scene."
+    "prompt", default="A detailed kitchen.", prompt="Describe your scene."
 )
 def prompt(output_model_name: str, prompt: str, provider: Optional[str] = None, model: Optional[str] = None) -> None:
     """
